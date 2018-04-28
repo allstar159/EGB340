@@ -184,6 +184,7 @@ void userInput(RED redCon, OX oxCon, NH3 nh3Con)
         inputChar = Serial.read();
         input += inputChar;
         Serial.print(String(inputChar));
+
         if (inputChar == '\r')
         {
             if (input.equalsIgnoreCase("yes\r") || input.equalsIgnoreCase("y\r"))
@@ -300,27 +301,36 @@ void dispConcentrations(RED redVals, OX oxVals, NH3 nh3Vals, bool update)
     String units = " ppm";
 
     float RED_Cons[7] = {redVals.CO, redVals.Ethanol, redVals.Hydrogen, redVals.Ammonia, redVals.Methane, redVals.Propane, redVals.IsoButane};
+    String RED_Gas[7] = {"CO\t  :\t", "Ethanol\t  :\t", "Hydrogen  :\t", "Ammonia\t  :\t", "Methane\t  :\t", "Propane\t  :\t", "IsoButane :\t"};
     float OX_Cons[2] = {oxVals.NO2, oxVals.Hydrogen};
+    String OX_Gas[2] = {"NO2\t  :\t", "Hydrogen  :\t"};
     float NH3_Cons[5] = {nh3Vals.Hydrogen, nh3Vals.Ethanol, nh3Vals.Ammonia, nh3Vals.Propane, nh3Vals.IsoButane};
+    String NH3_Gas[5] = {"Hydrogen  :\t", "Ethanol\t  :\t", "Ammonia\t  :\t", "Propane\t  :\t", "IsoButane :\t"};
 
     if (update == true)
     {
-        for (int i = 0; i<sizeof(RED_Cons)-1;i++)
+        for (int i = 0; i<7;i++)
         {
-            String outRED = String(RED_Cons[i]+units);
-            Serial.println(outRED);
+            String outRED = String(RED_Cons[i]);
+            Serial.print(RED_Gas[i]);
+            Serial.print(outRED);
+            Serial.println(units);
         }
         Serial.println();
-        for (int i = 0; i<sizeof(OX_Cons)-1;i++)
+        for (int i = 0; i<2;i++)
         {
-            String outOX = String(OX_Cons[i]+units);
-            Serial.println(outOX);
+            String outOX = String(OX_Cons[i]);
+            Serial.print(OX_Gas[i]);
+            Serial.print(outOX);
+            Serial.println(units);
         }
         Serial.println();
-        for (int i = 0; i<sizeof(NH3_Cons)-1;i++)
+        for (int i = 0; i<5;i++)
         {
-            String outNH3 = String(NH3_Cons[i]+units);
-            Serial.println(outNH3);
+            String outNH3 = String(NH3_Cons[i]);
+            Serial.print(NH3_Gas[i]);
+            Serial.print(outNH3);
+            Serial.println(units);
         }
         Serial.println();
     }
