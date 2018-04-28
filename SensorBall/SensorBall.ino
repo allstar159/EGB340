@@ -47,9 +47,9 @@ bool update = true;
 char inputChar;
 String input;
 
-float roRED = 98.5986; //Calculated ro value using the concentration of the specified gas in air
-float roOX = 0.7035; //Calculated ro value using the concentration of the specified gas in air
-float roNH3 = 129.5987; //Calculated ro value using the concentration of the specified gas in air
+float roRED = 233.18; //Calculated ro value using the concentration of the specified gas in air
+float roOX = 11.12; //Calculated ro value using the concentration of the specified gas in air
+float roNH3 = 190.09; //Calculated ro value using the concentration of the specified gas in air
 
 struct ratio 
 {
@@ -92,10 +92,10 @@ void setup()
     Serial.begin(9600);
     //Keyboard.begin();
 
-    GasSetup(A1, A2, A3);
-    ledFlash();
-
-    Serial.print("Would you like to see the current gas concentrations? (y/n)\t");
+    //GasSetup(A1, A2, A3);
+    //ledFlash();
+    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+    //Serial.print("Would you like to see the current gas concentrations? (y/n)\t");
 }
 
 
@@ -109,7 +109,7 @@ void loop()
     OX oxCon = OXConcentration(gasSenseVals.OX);
     NH3 nh3Con = NH3Concentration(gasSenseVals.NH3);
 
-    userInput(redCon, oxCon, nh3Con);
+    userInputs(redCon, oxCon, nh3Con);
 
     delay(300);
 }
@@ -176,6 +176,75 @@ void ledFlash(void)
     }
 }
 
+void userInputs(RED redCon, OX oxCon, NH3 nh3Con)
+{
+    int mode;
+
+    while (Serial.available() > 0)
+    {
+        delay(3);
+        // read incoming serial data:
+        inputChar = Serial.read();
+        input += inputChar;
+        Serial.print(String(inputChar));
+
+        if (inputChar == '\r')
+        {
+            if (input.equalsIgnoreCase("gas\r"))
+            {
+                mode = 1;
+            }else if (input.equalsIgnoreCase("temp\r") || input.equalsIgnoreCase("temperature\r"))
+            {
+                mode = 2;
+            }else if (input.equalsIgnoreCase("res\r") || input.equalsIgnoreCase("resistance\r"))
+            {
+                mode = 3;
+            }else if (input.equalsIgnoreCase("all\r"))
+            {
+                mode = 4;
+            }
+
+            switch (mode) 
+            {
+                case 1:
+                    Serial.println();
+                    dispConcentrations(redCon, oxCon, nh3Con, update);
+                    Serial.flush();
+                    inputChar = (char)0;
+                    input = "";
+                    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+                    break;
+                case 2:
+                    Serial.println();
+                    updateTemp(update);
+                    Serial.flush();
+                    inputChar = (char)0;
+                    input = "";
+                    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+                    break;
+                case 3:
+                    Serial.println();
+                    printResistance(A1, A2, A3);
+                    Serial.flush();
+                    inputChar = (char)0;
+                    input = "";
+                    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+                    break;
+                case 4:
+                    Serial.println();
+                    dispConcentrations(redCon, oxCon, nh3Con, update);
+                    updateTemp(update);
+                    printResistance(A1, A2, A3);
+                    Serial.flush();
+                    inputChar = (char)0;
+                    input = "";
+                    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+                    break;
+            }
+        }
+    }
+}
+
 void userInput(RED redCon, OX oxCon, NH3 nh3Con)
 {
     while (Serial.available() > 0) {
@@ -213,6 +282,35 @@ void userInput(RED redCon, OX oxCon, NH3 nh3Con)
             }
         }
     } 
+}
+
+void printResistance(int REDSensePin, int OXSensePin, int NH3SensePin)
+{
+    int REDSenseVal = analogRead(REDSensePin);
+    float REDVoltage = REDSenseVal*(sysMilliVolt/1023);
+    float rsRED = senseResistance/((sysMilliVolt/REDVoltage)-1);
+
+    int OXSenseVal = analogRead(OXSensePin);
+    float OXVoltage = OXSenseVal*(sysMilliVolt/1023);
+    float rsOX = senseResistance/((sysMilliVolt/OXVoltage)-1);
+
+    int NH3SenseVal = analogRead(NH3SensePin);
+    float NH3Voltage = NH3SenseVal*(sysMilliVolt/1023);
+    float rsNH3 = senseResistance/((sysMilliVolt/NH3Voltage)-1);
+
+    Serial.print("Ro RED :\t");
+    Serial.println(roRED);
+    Serial.print("Rs RED :\t");
+    Serial.println(rsRED);
+    Serial.print("Ro OX  :\t");
+    Serial.println(roOX);
+    Serial.print("Rs OX  :\t");
+    Serial.println(rsOX);
+    Serial.print("Ro NH3 :\t");
+    Serial.println(roNH3);
+    Serial.print("Rs NH3 :\t");
+    Serial.println(rsNH3);
+    Serial.println();
 }
 
 float tempSense(int sensePin) 
@@ -348,6 +446,7 @@ void updateTemp(bool update)
     {
         String Deg = "°C";
         String temperature = String(temp1+Deg);
+        Serial.print("Temperature  :\t");
         Serial.println(temperature);
         Serial.println();
     }
