@@ -202,6 +202,9 @@ void userInputs(RED redCon, OX oxCon, NH3 nh3Con)
             }else if (input.equalsIgnoreCase("all\r"))
             {
                 mode = 4;
+            }else 
+            {
+                mode = 5;
             }
 
             switch (mode) 
@@ -238,6 +241,14 @@ void userInputs(RED redCon, OX oxCon, NH3 nh3Con)
                     Serial.flush();
                     inputChar = (char)0;
                     input = "";
+                    Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
+                    break;
+                case 5:
+                    Serial.println();
+                    Serial.flush();
+                    inputChar = (char)0;
+                    input = "";
+                    Serial.println("Please enter a valid response!");
                     Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
                     break;
             }
@@ -298,18 +309,24 @@ void printResistance(int REDSensePin, int OXSensePin, int NH3SensePin)
     float NH3Voltage = NH3SenseVal*(sysMilliVolt/1023);
     float rsNH3 = senseResistance/((sysMilliVolt/NH3Voltage)-1);
 
-    Serial.print("Ro RED :\t");
-    Serial.println(roRED);
-    Serial.print("Rs RED :\t");
-    Serial.println(rsRED);
-    Serial.print("Ro OX  :\t");
-    Serial.println(roOX);
-    Serial.print("Rs OX  :\t");
-    Serial.println(rsOX);
-    Serial.print("Ro NH3 :\t");
-    Serial.println(roNH3);
-    Serial.print("Rs NH3 :\t");
-    Serial.println(rsNH3);
+    Serial.print("Ro RED\t  :\t");
+    Serial.print(roRED);
+    Serial.println("\tkΩ");
+    Serial.print("Rs RED\t  :\t");
+    Serial.print(rsRED);
+    Serial.println("\tkΩ");
+    Serial.print("Ro OX\t  :\t");
+    Serial.print(roOX);
+    Serial.println("\tkΩ");
+    Serial.print("Rs OX\t  :\t");
+    Serial.print(rsOX);
+    Serial.println("\tkΩ");
+    Serial.print("Ro NH3\t  :\t");
+    Serial.print(roNH3);
+    Serial.println("\tkΩ");
+    Serial.print("Rs NH3\t  :\t");
+    Serial.print(rsNH3);
+    Serial.println("\tkΩ");
     Serial.println();
 }
 
