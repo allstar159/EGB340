@@ -89,9 +89,10 @@ struct NH3
 //initialization function
 void setup()
 {
-    Serial.begin(9600);
-    //Keyboard.begin();
+    pinMode(4, OUTPUT);
 
+    BlueToothSetup();
+    //Keyboard.begin();
     //GasSetup(A1, A2, A3);
     //ledFlash();
     Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
@@ -111,7 +112,36 @@ void loop()
 
     userInputs(redCon, oxCon, nh3Con);
 
+    if (tempSense(A0) > 23)
+    {
+        digitalWrite(4, HIGH);
+    }else 
+    {
+        digitalWrite(4, LOW);
+    }
+
     delay(300);
+}
+
+void BlueToothSetup()
+{
+    pinMode(2, OUTPUT);
+    pinMode(3, OUTPUT);
+    pinMode(4, OUTPUT);
+
+    digitalWrite(2, HIGH);
+    digitalWrite(4, HIGH);
+
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("SN, SensorBall");
+    Serial.println("SR,20000000");
+    Serial.println("R,1");
+    delay(500);
+    Serial.println("A");
+
+    
+    digitalWrite(3, HIGH);
 }
 
 void GasSetup(int REDSensePin, int OXSensePin, int NH3SensePin)
@@ -483,3 +513,19 @@ float logFunction(float y, float power, float modifier)
     float concentration = pow(y, power)*modifier;
     return concentration;
 }
+/*
+float logFunction(float y, float power, float modifier)
+{
+    /*
+        This function is used to calculate the concentration 
+        of a specified gas using a power function 
+
+        This function takes the inputs y, k and m. 
+        - y is the rs/ro ratio from the specified sensor
+        - k is the y intercept of the specified gas on the specified sensor graph, found using the MiCS6814 data sheet
+        - m is the gradient of the specified gas on the specified sensor graph, found using the MiCS6814 data sheet
+    *
+    float concentration = pow(y/k, 1/m);
+    return concentration;
+}
+*/
