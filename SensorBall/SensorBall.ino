@@ -2,7 +2,7 @@
 #define sysVolt 5
 #define sysMilliVolt 5000
 #define senseResistance 68 // Note this is in killiohms
-#define LED_PIN 4
+#define TEMP_LED_PIN 4
 #define UPDATE_INTERVAL 4000
 
 struct ratio
@@ -46,11 +46,13 @@ struct NH3
 unsigned long lastUpdateTime = 0;
 unsigned long lastToneTime = 0;
 int updateNumber = 0;
+bool tempDanger = false;
+bool gasDanger = false;
 
 
 void setup()
 {
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(TEMP_LED_PIN, OUTPUT); // Set LED indicator PIN to output
 
   setupBluetooth();
   setupGas(A1, A2, A3);
@@ -62,43 +64,47 @@ void setup()
 }
 
 void loop()
-{
+{  
   // Check if another update is due
-  if (millis() - lastUpdateTime < UPDATE_INTERVAL)
+  if ((millis() - lastUpdateTime) > UPDATE_INTERVAL)
   {
-    return;
+    updateNumber++;
+    Serial.println(updateNumber);
+
+    // Update temperature
+    float temp = senseTemp(A0);
+    printTemp(temp);
+
+    // Update gas concentrations
+    ratio gasSenseVals = GasSense(A1, A2, A3);
+    RED redCon = REDConcentration(gasSenseVals.RED);
+    OX oxCon = OXConcentration(gasSenseVals.OX);
+    NH3 nh3Con = NH3Concentration(gasSenseVals.NH3);
+    //dispConcentrations(redCon, oxCon, nh3Con);
+    Serial.println("Safe gas concentrations.");
+
+    Serial.println(); // Blank line
+
+    tempDanger = temp > 35.0;
+    gasDanger = false; // TODO
+
+    // Control LED indicator
+    if (tempDanger)
+    {
+      digitalWrite(TEMP_LED_PIN, HIGH);
+    }
+    else
+    {
+      digitalWrite(TEMP_LED_PIN, LOW);
+    }
+
+    // Start buzzer tone
+    buzzerStartTone();
+
+    lastUpdateTime = millis();
   }
 
-  updateNumber++;
-  Serial.println(updateNumber);
-
-  // Update temperature
-  float temp = senseTemp(A0);
-  printTemp(temp);
-
-  // Update gas concentrations
-  ratio gasSenseVals = GasSense(A1, A2, A3);
-  RED redCon = REDConcentration(gasSenseVals.RED);
-  OX oxCon = OXConcentration(gasSenseVals.OX);
-  NH3 nh3Con = NH3Concentration(gasSenseVals.NH3);
-  //dispConcentrations(redCon, oxCon, nh3Con);
-  Serial.println("Safe gas concentrations.");
-
-  Serial.println(); // Blank line
-
-  // Check for high temperature, turn on LED, and do buzzer noise
-  if (temp > 30.0)
-  {
-    digitalWrite(LED_PIN, HIGH);
-    buzzerAlert(false, true);
-  }
-  else
-  {
-    digitalWrite(LED_PIN, LOW);
-    buzzerAlert(false, false);
-  }
-
-  lastUpdateTime = millis();
+  buzzerLoop();
 }
 
 /*
