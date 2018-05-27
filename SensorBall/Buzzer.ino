@@ -1,5 +1,4 @@
 #define TONE_PIN 8 // Pin for positive connection of buzzer
-#define TONE_CYCLE_TIME 4000
 #define TONE_DURATION_SHORT 300
 #define TONE_DURATION_LONG 1000
 #define TONE_FREQUENCY_LOW 2000
