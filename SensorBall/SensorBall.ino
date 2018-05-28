@@ -2,7 +2,9 @@
 #define sysVolt 5
 #define sysMilliVolt 5000
 #define senseResistance 68 // Note this is in killiohms
-#define TEMP_LED_PIN 4
+#define SAFE_LED_PIN 4
+#define TEMP_LED_PIN 5
+#define TEMP_SAFE_LIMIT 26.0
 #define UPDATE_INTERVAL 4000
 
 struct ratio
@@ -52,7 +54,9 @@ bool gasDanger = false;
 
 void setup()
 {
-  pinMode(TEMP_LED_PIN, OUTPUT); // Set LED indicator PIN to output
+  // Set LED indicator PINs to output
+  pinMode(SAFE_LED_PIN, OUTPUT);
+  pinMode(TEMP_LED_PIN, OUTPUT);
 
   setupBluetooth();
   setupGas(A1, A2, A3);
@@ -64,7 +68,7 @@ void setup()
 }
 
 void loop()
-{  
+{
   // Check if another update is due
   if ((millis() - lastUpdateTime) > UPDATE_INTERVAL)
   {
@@ -72,7 +76,10 @@ void loop()
     Serial.println(updateNumber);
 
     // Update temperature
+    // Delay and remeasure for accurate results (due to interference or something)
     float temp = senseTemp(A0);
+    delay(10);
+    temp = senseTemp(A0);
     printTemp(temp);
 
     // Update gas concentrations
@@ -85,10 +92,19 @@ void loop()
 
     Serial.println(); // Blank line
 
-    tempDanger = temp > 35.0;
+    tempDanger = temp > 26.0;
     gasDanger = false; // TODO
 
     // Control LED indicator
+    if (!tempDanger && !gasDanger)
+    {
+      digitalWrite(SAFE_LED_PIN, HIGH);
+    }
+    else
+    {
+      digitalWrite(SAFE_LED_PIN, LOW);
+    }
+
     if (tempDanger)
     {
       digitalWrite(TEMP_LED_PIN, HIGH);

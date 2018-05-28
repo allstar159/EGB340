@@ -8,7 +8,7 @@ float senseTemp(int sensePin)
   */
   int senseVal = analogRead(sensePin);
   float voltage = senseVal * (sysMilliVolt / 1024);
-  return (voltage - 400) / 10;
+  return (voltage - 500) / 10;
 }
 
 void printTemp(float temp)
