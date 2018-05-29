@@ -61,6 +61,11 @@ void setup()
   setupBluetooth();
   setupGas(A1, A2, A3);
 
+  digitalWrite(SAFE_LED_PIN, HIGH);
+  delay(100);
+  digitalWrite(SAFE_LED_PIN, LOW);
+  delay(100);
+  
   //Keyboard.begin();
   //ledFlash();
   //Serial.print("What data would you like to see? (Gas/Temperature/Resistance/All)\t");
@@ -88,12 +93,18 @@ void loop()
     OX oxCon = OXConcentration(gasSenseVals.OX);
     NH3 nh3Con = NH3Concentration(gasSenseVals.NH3);
     //dispConcentrations(redCon, oxCon, nh3Con);
-    Serial.println("Safe gas concentrations.");
-
-    Serial.println(); // Blank line
 
     tempDanger = temp > 26.0;
-    gasDanger = false; // TODO
+    gasDanger = redCon.Propane > 100;
+
+    if (gasDanger)
+    {
+      Serial.println("Unsafe gas concentrations.");
+    }
+    else
+    {
+      Serial.println("Safe gas concentrations.");
+    }
 
     // Control LED indicator
     if (!tempDanger && !gasDanger)
@@ -105,7 +116,7 @@ void loop()
       digitalWrite(SAFE_LED_PIN, LOW);
     }
 
-    if (tempDanger)
+    if (tempDanger || gasDanger)
     {
       digitalWrite(TEMP_LED_PIN, HIGH);
     }
@@ -118,6 +129,8 @@ void loop()
     buzzerStartTone();
 
     lastUpdateTime = millis();
+
+    Serial.println(); // Blank line
   }
 
   buzzerLoop();
